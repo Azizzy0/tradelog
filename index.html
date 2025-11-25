@@ -2,16 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Trading Journal</title>
+  <title>Trading Journal (Firebase)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      sans-serif;
     }
-    /* Simple fade-in for calendar cells */
     .fade-in {
       animation: fadeIn 0.3s ease-in-out forwards;
     }
@@ -19,520 +17,528 @@
       from { opacity: 0; transform: translateY(4px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    /* Scrollbar for trade list */
-    .thin-scroll::-webkit-scrollbar {
-      width: 6px;
-    }
+    .thin-scroll::-webkit-scrollbar { width: 6px; }
     .thin-scroll::-webkit-scrollbar-thumb {
       background: #4b5563;
       border-radius: 9999px;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-bold">Trading Journal</h1>
-        <span id="monthLabel"
-          class="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-sm bg-slate-900/70">
-          <!-- Filled by JS -->
-        </span>
-      </div>
 
-      <div class="flex items-center gap-2">
-        <button id="prevMonthBtn"
-          class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm">
-          ◀ Prev
-        </button>
-        <button id="todayBtn"
-          class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm">
-          This month
-        </button>
-        <button id="nextMonthBtn"
-          class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm">
-          Next ▶
-        </button>
-      </div>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+<div class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- Header + Firebase Auth -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-bold">Trading Journal</h1>
+      <span id="monthLabel"
+            class="inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-sm bg-slate-900/70">
+      </span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[2fr,1.1fr] gap-6">
-      <!-- LEFT: Calendar + trade form -->
-      <div class="space-y-4">
-        <!-- Calendar -->
-        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
-          <!-- Day headers -->
-          <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-400 mb-2">
-            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
-            <div>Thu</div><div>Fri</div><div>Sat</div>
-          </div>
-
-          <!-- Calendar grid -->
-          <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-xs sm:text-sm">
-            <!-- JS fills cells -->
-          </div>
-        </div>
-
-        <!-- Add Trade Form -->
-        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
-          <h2 class="text-lg font-semibold mb-3">Log a Trade</h2>
-          <form id="tradeForm" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div>
-              <label class="block text-xs mb-1 text-slate-300">Date</label>
-              <input type="date" id="tradeDate"
-                     class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm"
-                     required />
-            </div>
-            <div>
-              <label class="block text-xs mb-1 text-slate-300">P&L ($)</label>
-              <input type="number" id="tradePnL" step="0.01"
-                     class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm"
-                     required />
-            </div>
-            <div>
-              <label class="block text-xs mb-1 text-slate-300">Symbol</label>
-              <input type="text" id="tradeSymbol" placeholder="e.g. AUDUSD"
-                     class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm" />
-            </div>
-            <div class="sm:col-span-4">
-              <label class="block text-xs mb-1 text-slate-300">Notes</label>
-              <textarea id="tradeNotes" rows="2"
-                        class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm"></textarea>
-            </div>
-            <div class="sm:col-span-4 flex justify-end">
-              <button type="submit"
-                      class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-sm font-semibold text-slate-950">
-                Save Trade
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Recent trades list -->
-        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-lg font-semibold">Trades (current month)</h2>
-            <button id="clearAllBtn"
-                    class="text-xs text-red-400 hover:text-red-300 underline underline-offset-2">
-              Clear all data
-            </button>
-          </div>
-          <div id="tradesList" class="max-h-64 overflow-y-auto thin-scroll text-sm space-y-2">
-            <!-- JS fills -->
-          </div>
-        </div>
+    <!-- Auth Box -->
+    <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-3 py-2 flex flex-col sm:flex-row gap-2 items-center">
+      <div id="authStatus" class="text-xs text-slate-300">
+        Not logged in
       </div>
-
-      <!-- RIGHT: Stats side panel -->
-      <div class="space-y-4">
-        <!-- Monthly stats -->
-        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-sm font-medium text-slate-300">Monthly stats</span>
-            <span id="monthPnLBadge"
-                  class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800">
-              <!-- filled by JS -->
-            </span>
-          </div>
-          <div class="grid grid-cols-2 gap-3 text-sm">
-            <div class="rounded-xl bg-slate-800/60 px-3 py-2">
-              <div class="text-xs text-slate-400">Total P&L</div>
-              <div id="totalPnL" class="text-lg font-semibold mt-1">$0</div>
-            </div>
-            <div class="rounded-xl bg-slate-800/60 px-3 py-2">
-              <div class="text-xs text-slate-400">Days traded</div>
-              <div id="daysTraded" class="text-lg font-semibold mt-1">0</div>
-            </div>
-            <div class="rounded-xl bg-slate-800/60 px-3 py-2">
-              <div class="text-xs text-slate-400">Best day</div>
-              <div id="bestDay" class="text-lg font-semibold mt-1">$0</div>
-            </div>
-            <div class="rounded-xl bg-slate-800/60 px-3 py-2">
-              <div class="text-xs text-slate-400">Worst day</div>
-              <div id="worstDay" class="text-lg font-semibold mt-1">$0</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Weekly stats -->
-        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
-          <h2 class="text-sm font-medium text-slate-300 mb-3">Weeks</h2>
-          <div id="weeksList" class="space-y-2 text-sm">
-            <!-- JS fills weekly P&L -->
-          </div>
-        </div>
+      <div id="authControls" class="flex flex-wrap gap-2 items-center">
+        <input id="authEmail" type="email" placeholder="email"
+               class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs" />
+        <input id="authPassword" type="password" placeholder="password"
+               class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs" />
+        <button id="signUpBtn"
+                class="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs">
+          Sign up
+        </button>
+        <button id="loginBtn"
+                class="px-2 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-xs text-slate-950">
+          Log in
+        </button>
+        <button id="logoutBtn"
+                class="px-2 py-1 rounded bg-red-500/70 hover:bg-red-500 text-xs hidden">
+          Log out
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- APP SCRIPT -->
-  <script>
-    // ======= Storage helpers =======
-    const STORAGE_KEY = "tradingJournalTrades_v1";
-
-    function loadTrades() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return [];
-      }
-    }
-
-    function saveTrades(trades) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
-    }
-
-    let trades = loadTrades();
-
-    // Each trade: { id, date: "YYYY-MM-DD", pnl: number, symbol, notes }
-
-    // ======= Date helpers =======
-    let current = new Date();
-    let currentMonth = current.getMonth(); // 0-11
-    let currentYear = current.getFullYear();
-
-    function formatDateKey(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    function getMonthLabel(year, monthIndex) {
-      const formatter = new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        year: "numeric",
-      });
-      return formatter.format(new Date(year, monthIndex, 1));
-    }
-
-    function getDaysInMonth(year, monthIndex) {
-      return new Date(year, monthIndex + 1, 0).getDate();
-    }
-
-    // ======= Aggregation =======
-    function getDailyTotalsForMonth(year, monthIndex) {
-      const result = {};
-      const monthStr = String(monthIndex + 1).padStart(2, "0");
-      const yearStr = String(year);
-
-      for (const t of trades) {
-        if (!t.date) continue;
-        // t.date expected "YYYY-MM-DD"
-        const [y, m, d] = t.date.split("-");
-        if (y === yearStr && m === monthStr) {
-          const key = `${y}-${m}-${d}`;
-          const pnl = Number(t.pnl) || 0;
-          if (!result[key]) result[key] = 0;
-          result[key] += pnl;
-        }
-      }
-      return result;
-    }
-
-    function getWeekIndex(dayOfMonth, firstDayIndex) {
-      // firstDayIndex is 0-6, where 0 = Sunday
-      // Example: if month starts on Wed (3), days 1-4 are in week 1, etc.
-      const offset = firstDayIndex; // days shifted before first of month
-      const zeroBased = dayOfMonth - 1 + offset;
-      const weekIndex = Math.floor(zeroBased / 7); // 0-based
-      return weekIndex; // 0..5
-    }
-
-    // ======= Rendering calendar =======
-    const calendarGrid = document.getElementById("calendarGrid");
-    const monthLabelEl = document.getElementById("monthLabel");
-
-    function renderCalendar() {
-      const year = currentYear;
-      const month = currentMonth;
-
-      monthLabelEl.textContent = getMonthLabel(year, month);
-
-      calendarGrid.innerHTML = "";
-
-      const firstDayIndex = new Date(year, month, 1).getDay(); // 0=Sun
-      const daysInMonth = getDaysInMonth(year, month);
-      const dailyTotals = getDailyTotalsForMonth(year, month);
-
-      // For weekly stats
-      const weeklyTotals = [0, 0, 0, 0, 0, 0];
-
-      // Fill cells (we’ll make a fixed 42-cell grid)
-      const totalCells = 42;
-      let dayNum = 1;
-
-      for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement("div");
-        cell.className =
-          "relative rounded-xl bg-slate-900 border border-slate-800 min-h-[80px] p-2 flex flex-col gap-1 fade-in";
-
-        if (i < firstDayIndex || dayNum > daysInMonth) {
-          cell.classList.add("opacity-30");
-          calendarGrid.appendChild(cell);
-          continue;
-        }
-
-        const dateObj = new Date(year, month, dayNum);
-        const key = formatDateKey(dateObj);
-        const dayTotal = dailyTotals[key] || 0;
-
-        // Update weekly totals
-        const wIndex = getWeekIndex(dayNum, firstDayIndex);
-        weeklyTotals[wIndex] += dayTotal;
-
-        const dayHeader = document.createElement("div");
-        dayHeader.className = "flex items-center justify-between text-xs";
-
-        const dayNumberEl = document.createElement("span");
-        dayNumberEl.textContent = dayNum;
-        dayNumberEl.className = "font-semibold text-slate-200";
-
-        dayHeader.appendChild(dayNumberEl);
-
-        const tradeCount = trades.filter((t) => t.date === key).length;
-        if (tradeCount > 0) {
-          const badge = document.createElement("span");
-          badge.textContent = `${tradeCount} trade${tradeCount > 1 ? "s" : ""}`;
-          badge.className =
-            "text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300";
-          dayHeader.appendChild(badge);
-        }
-
-        cell.appendChild(dayHeader);
-
-        // P&L section
-        const pnlEl = document.createElement("div");
-        pnlEl.className = "mt-1 text-sm font-semibold";
-
-        if (dayTotal > 0) {
-          pnlEl.textContent = `+$${dayTotal.toFixed(2)}`;
-          pnlEl.classList.add("text-emerald-400");
-        } else if (dayTotal < 0) {
-          pnlEl.textContent = `-$${Math.abs(dayTotal).toFixed(2)}`;
-          pnlEl.classList.add("text-red-400");
-        } else {
-          pnlEl.textContent = "$0.00";
-          pnlEl.classList.add("text-slate-500");
-        }
-
-        cell.appendChild(pnlEl);
-
-        calendarGrid.appendChild(cell);
-        dayNum++;
-      }
-
-      renderStats(dailyTotals, weeklyTotals);
-      renderTradesList();
-    }
-
-    // ======= Stats rendering =======
-    const totalPnLEl = document.getElementById("totalPnL");
-    const daysTradedEl = document.getElementById("daysTraded");
-    const bestDayEl = document.getElementById("bestDay");
-    const worstDayEl = document.getElementById("worstDay");
-    const monthPnLBadge = document.getElementById("monthPnLBadge");
-    const weeksListEl = document.getElementById("weeksList");
-
-    function formatPnL(value) {
-      const abs = Math.abs(value).toFixed(2);
-      if (value > 0) return `+$${abs}`;
-      if (value < 0) return `-$${abs}`;
-      return "$0.00";
-    }
-
-    function renderStats(dailyTotals, weeklyTotals) {
-      const totals = Object.values(dailyTotals);
-      const total = totals.reduce((acc, v) => acc + v, 0);
-
-      totalPnLEl.textContent = formatPnL(total);
-      daysTradedEl.textContent = totals.length;
-
-      const best = totals.length ? Math.max(...totals) : 0;
-      const worst = totals.length ? Math.min(...totals) : 0;
-
-      bestDayEl.textContent = formatPnL(best);
-      worstDayEl.textContent = formatPnL(worst);
-
-      // Badge color
-      monthPnLBadge.textContent = `PNL: ${formatPnL(total)}`;
-      monthPnLBadge.classList.remove(
-        "bg-emerald-500/20",
-        "text-emerald-300",
-        "bg-red-500/20",
-        "text-red-300",
-        "bg-slate-700",
-        "text-slate-200"
-      );
-      if (total > 0) {
-        monthPnLBadge.classList.add("bg-emerald-500/20", "text-emerald-300");
-      } else if (total < 0) {
-        monthPnLBadge.classList.add("bg-red-500/20", "text-red-300");
-      } else {
-        monthPnLBadge.classList.add("bg-slate-700", "text-slate-200");
-      }
-
-      // Weekly list
-      weeksListEl.innerHTML = "";
-      weeklyTotals.forEach((wTotal, idx) => {
-        // Hide empty weeks at the end
-        const isAllZeroAfter = weeklyTotals
-          .slice(idx)
-          .every((v) => Math.abs(v) < 0.0001);
-        if (isAllZeroAfter && Math.abs(wTotal) < 0.0001 && idx > 3) return;
-
-        const row = document.createElement("div");
-        row.className =
-          "flex items-center justify-between rounded-xl bg-slate-800/60 px-3 py-2";
-
-        const left = document.createElement("div");
-        left.innerHTML = `<div class="text-xs text-slate-400">Week ${
-          idx + 1
-        }</div>
-                          <div class="text-[11px] text-slate-500">${
-                            wTotal === 0 ? "No trades" : "PnL"
-                          }</div>`;
-
-        const right = document.createElement("div");
-        right.className = "text-sm font-semibold";
-        right.textContent = formatPnL(wTotal);
-        if (wTotal > 0) right.classList.add("text-emerald-400");
-        else if (wTotal < 0) right.classList.add("text-red-400");
-        else right.classList.add("text-slate-400");
-
-        row.appendChild(left);
-        row.appendChild(right);
-        weeksListEl.appendChild(row);
-      });
-    }
-
-    // ======= Trades list =======
-    const tradesListEl = document.getElementById("tradesList");
-
-    function renderTradesList() {
-      const yearStr = String(currentYear);
-      const monthStr = String(currentMonth + 1).padStart(2, "0");
-
-      const currentMonthTrades = trades
-        .filter((t) => t.date.startsWith(`${yearStr}-${monthStr}-`))
-        .sort((a, b) => (a.date < b.date ? -1 : 1));
-
-      tradesListEl.innerHTML = "";
-
-      if (currentMonthTrades.length === 0) {
-        tradesListEl.innerHTML =
-          '<p class="text-xs text-slate-500">No trades logged for this month yet.</p>';
-        return;
-      }
-
-      for (const t of currentMonthTrades) {
-        const row = document.createElement("div");
-        row.className =
-          "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-slate-800 pb-1";
-
-        const left = document.createElement("div");
-        left.innerHTML = `<span class="text-xs text-slate-400">${t.date}</span>
-                          <span class="ml-2 text-xs uppercase text-slate-500">${t.symbol || ""}</span>
-                          ${
-                            t.notes
-                              ? `<div class="text-[11px] text-slate-500 mt-0.5">${t.notes}</div>`
-                              : ""
-                          }`;
-
-        const right = document.createElement("div");
-        right.className = "text-sm font-semibold";
-        const pnlVal = Number(t.pnl) || 0;
-        right.textContent = formatPnL(pnlVal);
-        if (pnlVal > 0) right.classList.add("text-emerald-400");
-        else if (pnlVal < 0) right.classList.add("text-red-400");
-        else right.classList.add("text-slate-400");
-
-        row.appendChild(left);
-        row.appendChild(right);
-        tradesListEl.appendChild(row);
-      }
-    }
-
-    // ======= Form handling =======
-    const tradeForm = document.getElementById("tradeForm");
-    const tradeDate = document.getElementById("tradeDate");
-    const tradePnL = document.getElementById("tradePnL");
-    const tradeSymbol = document.getElementById("tradeSymbol");
-    const tradeNotes = document.getElementById("tradeNotes");
-
-    // Default date = today
-    tradeDate.value = formatDateKey(new Date());
-
-    tradeForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const date = tradeDate.value;
-      const pnl = Number(tradePnL.value);
-      if (!date || isNaN(pnl)) return;
-
-      const trade = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-        date,
-        pnl,
-        symbol: tradeSymbol.value.trim(),
-        notes: tradeNotes.value.trim(),
-      };
-
-      trades.push(trade);
-      saveTrades(trades);
-
-      // Reset some fields
-      tradePnL.value = "";
-      tradeSymbol.value = "";
-      tradeNotes.value = "";
-
-      // Jump calendar to month of that trade
-      const d = new Date(date);
-      currentYear = d.getFullYear();
-      currentMonth = d.getMonth();
-
-      renderCalendar();
-    });
-
-    // ======= Month navigation =======
-    document.getElementById("prevMonthBtn").addEventListener("click", () => {
-      currentMonth--;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-      renderCalendar();
-    });
-
-    document.getElementById("nextMonthBtn").addEventListener("click", () => {
-      currentMonth++;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
-      renderCalendar();
-    });
-
-    document.getElementById("todayBtn").addEventListener("click", () => {
-      const now = new Date();
-      currentMonth = now.getMonth();
-      currentYear = now.getFullYear();
-      renderCalendar();
-    });
-
-    // Clear all data
-    document.getElementById("clearAllBtn").addEventListener("click", () => {
-      if (!confirm("Delete ALL saved trades? This cannot be undone.")) return;
-      trades = [];
-      saveTrades(trades);
-      renderCalendar();
-    });
-
-    // ======= Initial render =======
+  <div class="grid grid-cols-1 lg:grid-cols-[2fr,1.1fr] gap-6">
+    <!-- LEFT SIDE -->
+    <div class="space-y-4">
+
+      <!-- Top navigation -->
+      <div class="flex items-center justify-between mb-2 gap-2">
+        <div></div>
+        <div class="flex items-center gap-2">
+          <button id="prevMonthBtn"
+                  class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs">
+            ◀ Prev
+          </button>
+          <button id="todayBtn"
+                  class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs">
+            This month
+          </button>
+          <button id="nextMonthBtn"
+                  class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs">
+            Next ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
+        <div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-400 mb-2">
+          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
+          <div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+        <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-xs sm:text-sm"></div>
+      </div>
+
+      <!-- Add Trade Form -->
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4 opacity-60" id="formWrapper">
+        <h2 class="text-lg font-semibold mb-3">Log a Trade</h2>
+        <p id="loginHint" class="text-xs text-red-400 mb-2">
+          Log in to add trades.
+        </p>
+        <form id="tradeForm" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs mb-1 text-slate-300">Date</label>
+            <input type="date" id="tradeDate"
+                   class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm"
+                   required />
+          </div>
+          <div>
+            <label class="block text-xs mb-1 text-slate-300">P&L ($)</label>
+            <input type="number" id="tradePnL" step="0.01"
+                   class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm"
+                   required />
+          </div>
+          <div>
+            <label class="block text-xs mb-1 text-slate-300">Symbol</label>
+            <input type="text" id="tradeSymbol" placeholder="e.g. AUDUSD"
+                   class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm" />
+          </div>
+          <div class="sm:col-span-4">
+            <label class="block text-xs mb-1 text-slate-300">Notes</label>
+            <textarea id="tradeNotes" rows="2"
+                      class="w-full rounded-lg bg-slate-800 border border-slate-700 px-2 py-1.5 text-sm"></textarea>
+          </div>
+          <div class="sm:col-span-4 flex justify-end">
+            <button type="submit"
+                    class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-sm font-semibold text-slate-950">
+              Save Trade
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Trades List -->
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold">Trades (current month)</h2>
+          <button id="clearAllBtn"
+                  class="text-xs text-red-400 hover:text-red-300 underline underline-offset-2">
+            Clear all data
+          </button>
+        </div>
+        <div id="tradesList" class="max-h-64 overflow-y-auto thin-scroll text-sm space-y-2"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE: Stats -->
+    <div class="space-y-4">
+
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-slate-300">Monthly stats</span>
+          <span id="monthPnLBadge"
+                class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800"></span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="rounded-xl bg-slate-800/60 px-3 py-2">
+            <div class="text-xs text-slate-400">Total P&L</div>
+            <div id="totalPnL" class="text-lg font-semibold mt-1">$0</div>
+          </div>
+          <div class="rounded-xl bg-slate-800/60 px-3 py-2">
+            <div class="text-xs text-slate-400">Days traded</div>
+            <div id="daysTraded" class="text-lg font-semibold mt-1">0</div>
+          </div>
+          <div class="rounded-xl bg-slate-800/60 px-3 py-2">
+            <div class="text-xs text-slate-400">Best day</div>
+            <div id="bestDay" class="text-lg font-semibold mt-1">$0</div>
+          </div>
+          <div class="rounded-xl bg-slate-800/60 px-3 py-2">
+            <div class="text-xs text-slate-400">Worst day</div>
+            <div id="worstDay" class="text-lg font-semibold mt-1">$0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-slate-900/80 border border-slate-800 p-4">
+        <h2 class="text-sm font-medium text-slate-300 mb-3">Weeks</h2>
+        <div id="weeksList" class="space-y-2 text-sm"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE + APP SCRIPT -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+  import {
+    getFirestore, collection, addDoc,
+    getDocs, deleteDoc, doc, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  // === YOUR FIREBASE CONFIG (already inserted) ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_dj8gT-TaVgMVEXu1aC8n3nX4SbRd5eI",
+    authDomain: "tradelog-728fc.firebaseapp.com",
+    projectId: "tradelog-728fc",
+    storageBucket: "tradelog-728fc.firebasestorage.app",
+    messagingSenderId: "114705124304",
+    appId: "1:114705124304:web:51bc5c687919ca563707d5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let trades = [];
+
+  let current = new Date();
+  let currentMonth = current.getMonth();
+  let currentYear = current.getFullYear();
+
+  /* All functions below here handle:
+      - Login/signup/logout
+      - Sync with Firestore
+      - Rendering the calendar
+      - Rendering the stats
+      - Adding/deleting trades
+  */
+
+  /* ---------- Helpers ---------- */
+  const calendarGrid = document.getElementById("calendarGrid");
+  const monthLabelEl = document.getElementById("monthLabel");
+  const totalPnLEl = document.getElementById("totalPnL");
+  const daysTradedEl = document.getElementById("daysTraded");
+  const bestDayEl = document.getElementById("bestDay");
+  const worstDayEl = document.getElementById("worstDay");
+  const monthPnLBadge = document.getElementById("monthPnLBadge");
+  const weeksListEl = document.getElementById("weeksList");
+  const tradesListEl = document.getElementById("tradesList");
+
+  const tradeForm = document.getElementById("tradeForm");
+  const tradeDate = document.getElementById("tradeDate");
+  const tradePnL = document.getElementById("tradePnL");
+  const tradeSymbol = document.getElementById("tradeSymbol");
+  const tradeNotes = document.getElementById("tradeNotes");
+  const formWrapper = document.getElementById("formWrapper");
+  const loginHint = document.getElementById("loginHint");
+
+  const authStatus = document.getElementById("authStatus");
+  const authEmail = document.getElementById("authEmail");
+  const authPassword = document.getElementById("authPassword");
+  const signUpBtn = document.getElementById("signUpBtn");
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const clearAllBtn = document.getElementById("clearAllBtn");
+
+  tradeDate.value = formatDateKey(new Date());
+
+  function formatDateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  function getMonthLabel(year, monthIndex) {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long", year: "numeric"
+    }).format(new Date(year, monthIndex, 1));
+  }
+  function getDaysInMonth(year, monthIndex) {
+    return new Date(year, monthIndex + 1, 0).getDate();
+  }
+  function getWeekIndex(day, firstDayIndex) {
+    return Math.floor((day - 1 + firstDayIndex) / 7);
+  }
+  function formatPnL(value) {
+    const abs = Math.abs(value).toFixed(2);
+    if (value > 0) return `+$${abs}`;
+    if (value < 0) return `-$${abs}`;
+    return "$0.00";
+  }
+
+  /* ---------- Firestore ---------- */
+  function col() {
+    return collection(db, "users", currentUser.uid, "trades");
+  }
+  async function fetchTrades() {
+    if (!currentUser) { trades = []; renderCalendar(); return; }
+
+    const q = query(col(), orderBy("date", "asc"));
+    const snap = await getDocs(q);
+    trades = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderCalendar();
-  </script>
+  }
+  async function addTrade(data) {
+    if (!currentUser) return;
+    await addDoc(col(), data);
+    fetchTrades();
+  }
+  async function deleteAllTrades() {
+    if (!currentUser) return;
+    const snap = await getDocs(col());
+    await Promise.all(snap.docs.map(d => deleteDoc(doc(db,
+      "users", currentUser.uid, "trades", d.id))));
+    fetchTrades();
+  }
+
+  /* ---------- Auth ---------- */
+  function setLoggedOut() {
+    currentUser = null;
+    authStatus.textContent = "Not logged in";
+    logoutBtn.classList.add("hidden");
+    loginBtn.classList.remove("hidden");
+    signUpBtn.classList.remove("hidden");
+    authEmail.disabled = false;
+    authPassword.disabled = false;
+    formWrapper.classList.add("opacity-60");
+    loginHint.textContent = "Log in to add trades.";
+    trades = [];
+    renderCalendar();
+  }
+  function setLoggedIn(user) {
+    currentUser = user;
+    authStatus.textContent = `Logged in as ${user.email}`;
+    logoutBtn.classList.remove("hidden");
+    loginBtn.classList.add("hidden");
+    signUpBtn.classList.add("hidden");
+    authEmail.disabled = true;
+    authPassword.disabled = true;
+    formWrapper.classList.remove("opacity-60");
+    loginHint.textContent = "";
+    fetchTrades();
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) setLoggedIn(user);
+    else setLoggedOut();
+  });
+
+  signUpBtn.addEventListener("click", async () => {
+    try {
+      await createUserWithEmailAndPassword(auth,
+        authEmail.value.trim(), authPassword.value);
+    } catch(e) { alert(e.message); }
+  });
+
+  loginBtn.addEventListener("click", async () => {
+    try {
+      await signInWithEmailAndPassword(auth,
+        authEmail.value.trim(), authPassword.value);
+    } catch(e) { alert(e.message); }
+  });
+
+  logoutBtn.addEventListener("click", () => signOut(auth));
+
+  /* ---------- Calendar / Stats Rendering ---------- */
+
+  function getDailyTotals(year, month) {
+    const totals = {};
+    const ym = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+    for (const t of trades) {
+      if (!t.date.startsWith(ym)) continue;
+      totals[t.date] = (totals[t.date] || 0) + Number(t.pnl);
+    }
+    return totals;
+  }
+
+  function renderCalendar() {
+    const year = currentYear;
+    const month = currentMonth;
+
+    monthLabelEl.textContent = getMonthLabel(year, month);
+
+    calendarGrid.innerHTML = "";
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const daysInMonth = getDaysInMonth(year, month);
+
+    const totals = getDailyTotals(year, month);
+    const weekly = [0,0,0,0,0,0];
+
+    let day = 1;
+    for (let i = 0; i < 42; i++) {
+      const cell = document.createElement("div");
+      cell.className =
+        "rounded-xl bg-slate-900 border border-slate-800 min-h-[80px] p-2 fade-in";
+
+      if (i < firstDayIndex || day > daysInMonth) {
+        cell.classList.add("opacity-20");
+        calendarGrid.appendChild(cell);
+        continue;
+      }
+
+      const dateKey = formatDateKey(new Date(year, month, day));
+      const pnl = totals[dateKey] || 0;
+      const w = getWeekIndex(day, firstDayIndex);
+      weekly[w] += pnl;
+
+      const header = document.createElement("div");
+      header.className = "flex items-center justify-between text-xs";
+      header.innerHTML = `
+        <span class="font-semibold">${day}</span>
+        ${
+          trades.filter(t => t.date === dateKey).length
+            ? `<span class="text-[10px] px-2 py-0.5 bg-slate-800 rounded-full">
+                 ${trades.filter(t => t.date === dateKey).length} trades
+               </span>`
+            : ""
+        }
+      `;
+      cell.appendChild(header);
+
+      const pnlEl = document.createElement("div");
+      pnlEl.className = "mt-1 text-sm font-semibold";
+      pnlEl.textContent = formatPnL(pnl);
+      if (pnl > 0) pnlEl.classList.add("text-emerald-400");
+      else if (pnl < 0) pnlEl.classList.add("text-red-400");
+      else pnlEl.classList.add("text-slate-500");
+
+      cell.appendChild(pnlEl);
+      calendarGrid.appendChild(cell);
+
+      day++;
+    }
+
+    renderStats(totals, weekly);
+    renderTrades();
+  }
+
+  function renderStats(totals, weekly) {
+    const values = Object.values(totals);
+    const total = values.reduce((a,b)=>a+b,0);
+    totalPnLEl.textContent = formatPnL(total);
+    daysTradedEl.textContent = values.length;
+
+    bestDayEl.textContent = formatPnL(values.length?Math.max(...values):0);
+    worstDayEl.textContent = formatPnL(values.length?Math.min(...values):0);
+
+    monthPnLBadge.textContent = formatPnL(total);
+    monthPnLBadge.className =
+      "px-3 py-1 rounded-full text-xs font-semibold";
+    if (total > 0) monthPnLBadge.classList.add("bg-emerald-500/20","text-emerald-300");
+    else if (total < 0) monthPnLBadge.classList.add("bg-red-500/20","text-red-300");
+    else monthPnLBadge.classList.add("bg-slate-700","text-slate-300");
+
+    weeksListEl.innerHTML = "";
+    weekly.forEach((w,i)=>{
+      const row=document.createElement("div");
+      row.className=
+        "flex items-center justify-between rounded-xl bg-slate-800/60 px-3 py-2";
+      row.innerHTML=`
+        <div>
+          <div class="text-xs text-slate-400">Week ${i+1}</div>
+        </div>
+        <div class="text-sm font-semibold ${
+          w>0?"text-emerald-400":w<0?"text-red-400":"text-slate-400"
+        }">${formatPnL(w)}</div>
+      `;
+      weeksListEl.appendChild(row);
+    });
+  }
+
+  function renderTrades() {
+    const y = String(currentYear);
+    const m = String(currentMonth+1).padStart(2,"0");
+    const list = trades.filter(t=>t.date.startsWith(`${y}-${m}-`));
+
+    tradesListEl.innerHTML = "";
+
+    if (list.length === 0) {
+      tradesListEl.innerHTML =
+        '<p class="text-xs text-slate-500">No trades this month.</p>';
+      return;
+    }
+
+    for (const t of list) {
+      const row=document.createElement("div");
+      row.className=
+        "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-slate-800 pb-1";
+      row.innerHTML=`
+        <div>
+          <span class="text-xs text-slate-400">${t.date}</span>
+          <span class="ml-2 text-xs uppercase text-slate-500">
+            ${t.symbol||""}
+          </span>
+          ${
+            t.notes
+            ? `<div class="text-[11px] text-slate-500">${t.notes}</div>`
+            : ""
+          }
+        </div>
+        <div class="text-sm font-semibold ${
+          t.pnl>0?"text-emerald-400":t.pnl<0?"text-red-400":"text-slate-400"
+        }">${formatPnL(t.pnl)}</div>
+      `;
+      tradesListEl.appendChild(row);
+    }
+  }
+
+  /* ---------- UI Buttons ---------- */
+  tradeForm.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if (!currentUser) return alert("Log in first.");
+
+    await addTrade({
+      date: tradeDate.value,
+      pnl: Number(tradePnL.value),
+      symbol: tradeSymbol.value.trim(),
+      notes: tradeNotes.value.trim()
+    });
+
+    tradePnL.value = "";
+    tradeSymbol.value = "";
+    tradeNotes.value = "";
+  });
+
+  document.getElementById("prevMonthBtn").onclick = ()=>{
+    currentMonth--;
+    if (currentMonth<0){currentMonth=11;currentYear--;}
+    renderCalendar();
+  };
+  document.getElementById("nextMonthBtn").onclick = ()=>{
+    currentMonth++;
+    if (currentMonth>11){currentMonth=0;currentYear++;}
+    renderCalendar();
+  };
+  document.getElementById("todayBtn").onclick = ()=>{
+    const now=new Date();
+    currentMonth=now.getMonth();
+    currentYear=now.getFullYear();
+    renderCalendar();
+  };
+
+  clearAllBtn.onclick = async()=>{
+    if (!currentUser) return alert("Log in first.");
+    if (!confirm("Delete ALL trades?")) return;
+    await deleteAllTrades();
+  };
+
+  renderCalendar();
+</script>
 </body>
 </html>
